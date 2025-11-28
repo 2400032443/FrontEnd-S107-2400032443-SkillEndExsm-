@@ -1,0 +1,166 @@
+// FILE: package.json
+{
+  "name": "student-forms-useform",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  }
+}
+
+
+// FILE: src/index.js
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+import './index.css';
+
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<App />);
+
+
+// FILE: src/App.jsx
+import React, { useState } from 'react';
+
+/**
+ * useForm - a small reusable form hook
+ * @param {Object} initialValues - initial form field values
+ * @param {Function} onSubmit - callback called when form is submitted with values
+ */
+export function useForm(initialValues = {}, onSubmit) {
+  const [values, setValues] = useState(initialValues);
+
+  function handleChange(e) {
+    const { name, value, type, checked } = e.target;
+    const nextValue = type === 'checkbox' ? checked : value;
+    setValues(prev => ({ ...prev, [name]: nextValue }));
+    console.log('[useForm] input change:', { field: name, value: nextValue });
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    console.log('[useForm] form submit (raw values):', values);
+    if (typeof onSubmit === 'function') onSubmit(values);
+  }
+
+  function reset(newValues = initialValues) {
+    setValues(newValues);
+    console.log('[useForm] reset to:', newValues);
+  }
+
+  return { values, handleChange, handleSubmit, reset, setValues };
+}
+
+
+function LoginForm() {
+  const onSubmit = (vals) => {
+    console.log('[LoginForm] submitted values:', vals);
+    // here you would call your auth API
+  };
+
+  const { values, handleChange, handleSubmit, reset } = useForm({ email: '', password: '', remember: false }, onSubmit);
+
+  return (
+    <form onSubmit={handleSubmit} style={styles.form}>
+      <h2>Student Login</h2>
+      <label style={styles.label}>
+        Email
+        <input name="email" value={values.email} onChange={handleChange} style={styles.input} />
+      </label>
+      <label style={styles.label}>
+        Password
+        <input name="password" type="password" value={values.password} onChange={handleChange} style={styles.input} />
+      </label>
+      <label style={{...styles.label, flexDirection: 'row', alignItems: 'center'}}>
+        <input name="remember" type="checkbox" checked={values.remember} onChange={handleChange} /> Remember me
+      </label>
+      <div style={styles.row}>
+        <button type="submit">Login</button>
+        <button type="button" onClick={() => reset()}>Reset</button>
+      </div>
+    </form>
+  );
+}
+
+function RegisterForm() {
+  const onSubmit = (vals) => {
+    console.log('[RegisterForm] submitted values:', vals);
+    // simulate registration
+  };
+
+  const { values, handleChange, handleSubmit, reset } = useForm({ name: '', email: '', password: '', confirm: '' }, onSubmit);
+
+  return (
+    <form onSubmit={handleSubmit} style={styles.form}>
+      <h2>Student Registration</h2>
+      <label style={styles.label}>
+        Full name
+        <input name="name" value={values.name} onChange={handleChange} style={styles.input} />
+      </label>
+      <label style={styles.label}>
+        Email
+        <input name="email" value={values.email} onChange={handleChange} style={styles.input} />
+      </label>
+      <label style={styles.label}>
+        Password
+        <input name="password" type="password" value={values.password} onChange={handleChange} style={styles.input} />
+      </label>
+      <label style={styles.label}>
+        Confirm Password
+        <input name="confirm" type="password" value={values.confirm} onChange={handleChange} style={styles.input} />
+      </label>
+      <div style={styles.row}>
+        <button type="submit">Register</button>
+        <button type="button" onClick={() => reset()}>Reset</button>
+      </div>
+    </form>
+  );
+}
+
+export default function App() {
+  const [which, setWhich] = useState('both');
+
+  return (
+    <div style={styles.app}>
+      <h1>Student Forms (useForm demo)</h1>
+      <div style={styles.toggleRow}>
+        <button onClick={() => setWhich('login')}>Show Login</button>
+        <button onClick={() => setWhich('register')}>Show Register</button>
+        <button onClick={() => setWhich('both')}>Show Both</button>
+      </div>
+
+      <div style={styles.grid}>
+        {(which === 'both' || which === 'login') && <LoginForm />}
+        {(which === 'both' || which === 'register') && <RegisterForm />}
+      </div>
+
+      <p style={{marginTop:20}}>Open the browser console to see the input/change and submit logs.</p>
+    </div>
+  );
+}
+
+const styles = {
+  app: { fontFamily: 'Arial, sans-serif', padding: 20 },
+  grid: { display: 'flex', gap: 20, alignItems: 'flex-start' },
+  form: { border: '1px solid #ddd', padding: 12, borderRadius: 8, minWidth: 280 },
+  label: { display: 'flex', flexDirection: 'column', marginBottom: 10 },
+  input: { padding: 8, marginTop: 6, borderRadius: 4, border: '1px solid #ccc' },
+  row: { display: 'flex', gap: 8, marginTop: 8 },
+  toggleRow: { display: 'flex', gap: 8, marginBottom: 12 }
+};
+
+
+// FILE: src/index.css
+body { margin: 0; padding: 0; }
+button { padding: 8px 12px; border-radius: 6px; border: 1px solid #999; cursor: pointer; }
+
+/* End of files */
